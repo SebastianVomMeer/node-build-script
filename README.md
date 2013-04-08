@@ -2,7 +2,7 @@ node-build-script
 =================
 
 A simple build script for Coffeescript-based Node applications. It supports file
-change monitoring to trigger real-time deployment, test execution and web server (re-)starting.
+change monitoring to trigger real-time deployment, test execution and server (re-)starting.
 
 Usage
 -----
