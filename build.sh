@@ -14,7 +14,7 @@ if [[ "$#" == "0" ]]; then
     echo "Tasks:"
     echo "  build:          Build project."
     echo
-    echo "  test:           Build project and build and runs all tests."
+    echo "  test:           Build project and build and run all tests."
     echo "                  Equivalent to \"$name build build-tests run-tests\"."
     echo "  build-tests:    Build all tests."
     echo "  run-tests:      Run all tests."
@@ -93,19 +93,22 @@ run_tests() {
     fi
 }
 
-server_pid=0
 
 start_server() {
     echo "Start server..."
     $application_launcher "$build_directory/run-server.js" &
-    server_pid=$!
+    echo $! > .serverpid
 }
 
 stop_server() {
-    if [[ $server_pid > 0 ]]; then
-        echo "Stop server..."
-        kill $server_pid
-        server_pid=0
+    if [ -f ".serverpid" ]; then
+        local server_pid=$(head -n 1 .serverpid)
+        rm .serverpid
+        if [[ $server_pid > 0 ]]; then
+            echo "Stop server..."
+            kill $server_pid
+            server_pid=0
+        fi
     fi
 }
 
