@@ -144,6 +144,7 @@ process_tasks() {
                 stop_server
                 build_project
                 start_server
+                ;;
             'restart-server')
                 stop_server
                 start_server
