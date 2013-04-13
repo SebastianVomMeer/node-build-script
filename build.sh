@@ -12,11 +12,10 @@ if [[ "$#" == "0" ]]; then
     echo "Usage: $name [ task1 ] [ task2 ] [ task3 ] [ ... ]"
     echo
     echo "Tasks:"
-    echo "  build:          Build project."
+    echo "  build:          Build project and tests."
     echo
-    echo "  test:           Build project and build and run all tests."
-    echo "                  Equivalent to \"$name build build-tests run-tests\"."
-    echo "  build-tests:    Build all tests."
+    echo "  test:           Build project and run all tests."
+    echo "                  Equivalent to \"$name build run-tests\"."
     echo "  run-tests:      Run all tests."
     echo
     echo "  server:         Stop running server (if existing), build project and start server."
@@ -26,10 +25,10 @@ if [[ "$#" == "0" ]]; then
     echo "  start-server:   Start server."
     echo "  stop-server:    Stop running server (if existing)."
     echo
-    echo "  watch:          Start infinite loop triggering succeeding tasks whenever a file changes in"
-    echo "                  project directory. Use only once."
-    echo "  dev:            Build everything, runs tests and repeats whenever a file changes."
-    echo "                  Equivalent to \"$name test watch test\"."
+    echo "  watch:          Start infinite loop triggering succeeding tasks whenever a file changes"
+    echo "                  in project directory. Use only once."
+    echo "  dev:            Build everything, restart server, run tests and repeat whenever a file"
+    echo "                  changes. Equivalent to \"$name test watch test\"."
     exit 1
 fi
 
@@ -69,17 +68,14 @@ notify() {
     fi
 }
 
-
-build_project() {
+build() {
     echo "Build project..."
-    mkdir -p $build_directory/{lib,test}
-    $compiler --compile --output $build_directory/lib lib/precompiler.coffee
-}
-
-
-build_tests() {
-    echo "Build tests..."
-    $compiler --compile --output $build_directory/test test/precompiler.spec.coffee
+    changes=( "$(rsync -av "$source_directory/" "$build_directory")" )
+    for filepath in $changes; do
+      if [[ $filepath == *.coffee ]]; then
+        $compiler -b --compile "$build_directory/$filepath"
+      fi
+    done
 }
 
 
@@ -127,22 +123,18 @@ process_tasks() {
         tasks=("${tasks[@]}")
         case "$task" in
             'build')
-                build_project
+                build
                 ;;
             'test')
-                build_project
-                build_tests
+                build
                 run_tests
-                ;;
-            'build-tests')
-                build_tests
                 ;;
             'run-tests')
                 run_tests
                 ;;
             'server')
                 stop_server
-                build_project
+                build
                 start_server
                 ;;
             'restart-server')
@@ -159,7 +151,7 @@ process_tasks() {
                 watch
                 ;;
             'dev')
-                ./$0 test watch test
+                ./$0 server run-tests watch server run-tests
                 exit
                 ;;
             *)
