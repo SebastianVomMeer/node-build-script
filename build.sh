@@ -1,7 +1,16 @@
 #!/bin/bash
 
+
+# Target directory for compiled files starting from build script's path without leading and 
+# trailing slashes.
 build_directory="build"
+
+# Compiler executor for Coffeescript files. Check build task for execution details if you use 
+# something different from Coffeescript.
 compiler=coffee
+
+# Executor for Node applications. Used to run tests and start servers. Check these tasks for
+# execution details if you use something different from Node.
 application_launcher=node
 
 name=$(basename "$0")
