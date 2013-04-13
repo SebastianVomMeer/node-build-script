@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Directory of uncompiled source files starting from build script's path without leading and 
+# trailing slashes.
+source_directory="src"
 
 # Target directory for compiled files starting from build script's path without leading and 
 # trailing slashes.
@@ -12,6 +15,12 @@ compiler=coffee
 # Executor for Node applications. Used to run tests and start servers. Check these tasks for
 # execution details if you use something different from Node.
 application_launcher=node
+
+# Relative path from build directory; start-server uses something like 
+# `$application_launcher "$build_directory/$server_start_script"` to start the server.
+# Uncomment to ignore start-server task.
+server_start_script="run-server.js"
+
 
 name=$(basename "$0")
 
@@ -100,9 +109,11 @@ run_tests() {
 
 
 start_server() {
-    echo "Start server..."
-    $application_launcher "$build_directory/run-server.js" &
-    echo $! > .serverpid
+    if [ -n "$server_start_script" ]; then
+        echo "Start server..."
+        $application_launcher "$build_directory/$server_start_script" &
+        echo $! > .serverpid
+    fi
 }
 
 stop_server() {
@@ -121,7 +132,7 @@ stop_server() {
 watch() {
     echo "Waiting for file changes..."
     tasks=("${tasks[@]}" "watch" "${tasks[@]}")
-    inotifywait -rqe close_write,moved_to,create ./lib ./test
+    inotifywait -rqe close_write,moved_to,create "$source_directory"
 }
 
 
